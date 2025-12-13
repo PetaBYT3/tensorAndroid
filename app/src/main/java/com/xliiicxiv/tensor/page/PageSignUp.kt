@@ -1,0 +1,185 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+
+package com.xliiicxiv.tensor.page
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AlternateEmail
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.xliiicxiv.tensor.action.ActionSignUp
+import com.xliiicxiv.tensor.state.StateSignUp
+import com.xliiicxiv.tensor.template.CustomButton
+import com.xliiicxiv.tensor.template.CustomIconButton
+import com.xliiicxiv.tensor.template.CustomTextField
+import com.xliiicxiv.tensor.template.CustomTextFieldPassword
+import com.xliiicxiv.tensor.template.VerticalSpacer
+import com.xliiicxiv.tensor.template.generalPadding
+import com.xliiicxiv.tensor.viewmodel.ViewModelSignUp
+import org.koin.compose.viewmodel.koinViewModel
+
+@Composable
+fun PageSignUpCore(
+    navController: NavController,
+    viewModel: ViewModelSignUp = koinViewModel()
+) {
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val onAction = viewModel::onAction
+
+    Scaffold(
+        navController = navController,
+        state = state,
+        onAction = onAction,
+        snackBarHostState = snackBarHostState
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { snackBarMessage ->
+            snackBarHostState.showSnackbar(
+                message = snackBarMessage,
+                withDismissAction = true
+            )
+        }
+    }
+}
+
+@Composable
+private fun Scaffold(
+    navController: NavController,
+    state: StateSignUp,
+    onAction: (ActionSignUp) -> Unit,
+    snackBarHostState: SnackbarHostState
+) {
+    val scrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        state = rememberTopAppBarState()
+    )
+
+    Scaffold(
+        modifier = Modifier
+            .nestedScroll(scrollBehaviour.nestedScrollConnection)
+            .imePadding(),
+        topBar = {
+            TopBar(
+                scrollBehavior = scrollBehaviour,
+                navController = navController,
+                state = state,
+                onAction = onAction
+            )
+        },
+        content = { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                Content(
+                    navController = navController,
+                    state = state,
+                    onAction = onAction
+                )
+            }
+        },
+        snackbarHost = { SnackbarHost(snackBarHostState) }
+    )
+}
+
+@Composable
+private fun TopBar(
+    scrollBehavior: TopAppBarScrollBehavior,
+    navController: NavController,
+    state: StateSignUp,
+    onAction: (ActionSignUp) -> Unit
+) {
+    LargeTopAppBar(
+        navigationIcon = {
+            CustomIconButton(
+                icon = Icons.Rounded.ArrowBackIosNew,
+                onClick = { navController.popBackStack() }
+            )
+        },
+        title = { Text(text = "Sign Up") },
+        scrollBehavior = scrollBehavior
+    )
+}
+
+@Composable
+private fun Content(
+    navController: NavController,
+    state: StateSignUp,
+    onAction: (ActionSignUp) -> Unit
+) {
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(state = scrollState, enabled = true)
+            .padding(horizontal = generalPadding)
+    ) {
+        CustomTextField(
+            label = "E-Mail",
+            leadingIcon = Icons.Rounded.AlternateEmail,
+            value = state.textFieldEmail,
+            onValueChange = { onAction(ActionSignUp.TextFieldEmail(it)) }
+        )
+        VerticalSpacer()
+        CustomTextFieldPassword(
+            label = "Password",
+            value = state.textFieldPassword,
+            onValueChange = { onAction(ActionSignUp.TextFieldPassword(it)) }
+        )
+        VerticalSpacer()
+        CustomTextFieldPassword(
+            label = "Retype Password",
+            value = state.textFieldRetypePassword,
+            onValueChange = { onAction(ActionSignUp.TextFieldRetypePassword(it)) }
+        )
+        VerticalSpacer()
+        CustomButton(
+            text = "Sign Up",
+            isLoading = state.isSignUpButtonLoading,
+            onClick = { onAction(ActionSignUp.SignUp) }
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun Preview() {
+
+    val navController = rememberNavController()
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    Scaffold(
+        navController = navController,
+        state = StateSignUp(),
+        onAction = {},
+        snackBarHostState = snackBarHostState
+    )
+}

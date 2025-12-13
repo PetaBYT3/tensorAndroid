@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "89927130220",
+    "project_id": "tensorapp-ef6b9",
+    "storage_bucket": "tensorapp-ef6b9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:89927130220:android:a05c1a4f445745f301cc49",
+        "android_client_info": {
+          "package_name": "com.xliiicxiv.tensor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "89927130220-mjtmegu542sajv1s0hren7dp00g6k5ck.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.xliiicxiv.tensor",
+            "certificate_hash": "bda202a072e548d9f7f00bce797b7d23f3bac704"
+          }
+        },
+        {
+          "client_id": "89927130220-f9d74d665om3402r71qdt7t6omskl7sa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcOuoNbh4RyXzt3QEj3qfATBkO6J19zZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "89927130220-f9d74d665om3402r71qdt7t6omskl7sa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
