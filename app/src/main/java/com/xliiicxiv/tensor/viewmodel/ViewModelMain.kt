@@ -21,7 +21,7 @@ class ViewModelMain(
             delay(2_500)
             repositoryAuth.getCurrentUser().collect { firebaseUser ->
                 if (firebaseUser != null) {
-                    _effect.emit(RoutePage.PageTemplate)
+                    _effect.emit(RoutePage.PageSetup)
                 } else {
                     _effect.emit(RoutePage.PageSignIn)
                 }

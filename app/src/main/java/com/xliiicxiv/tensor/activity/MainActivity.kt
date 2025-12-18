@@ -16,6 +16,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.xliiicxiv.tensor.page.PageProfileCore
+import com.xliiicxiv.tensor.page.PageSetupCore
 import com.xliiicxiv.tensor.page.PageSignInCore
 import com.xliiicxiv.tensor.page.PageSignTemplateCore
 import com.xliiicxiv.tensor.page.PageSignUpCore
@@ -66,6 +68,16 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<RoutePage.PageSignUp> {
                         PageSignUpCore(
+                            navController = navController
+                        )
+                    }
+                    composable<RoutePage.PageSetup> {
+                        PageSetupCore(
+                            navController = navController
+                        )
+                    }
+                    composable<RoutePage.PageProfile> {
+                        PageProfileCore(
                             navController = navController
                         )
                     }

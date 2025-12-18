@@ -21,6 +21,8 @@ credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
 googleid = "1.1.1"
 firebaseFirestore = "26.0.2"
+file-kit = "0.12.0"
+image-crop = "0.5.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +53,13 @@ androidx-datastore-core = { group = "androidx.datastore", name = "datastore-core
 
 #Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "compose-navigation" }
+
+#File Kit
+filekit-dialog = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "file-kit" }
+filekit-dialog-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "file-kit" }
+
+#Image Cropper
+image-crop = { module = "com.github.SmartToolFactory:Compose-Cropper", version.ref = "image-crop" }
 
 #Material Icon
 androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended-android", version.ref = "androidx-materialIconsExtended" }

@@ -79,6 +79,13 @@ dependencies {
     //Navigation
     implementation(libs.androidx.navigation.compose)
 
+    //File Kit
+    implementation(libs.filekit.dialog)
+    implementation(libs.filekit.dialog.compose)
+
+    //Image Crop
+    implementation(libs.image.crop)
+
     //Material Icon
     implementation(libs.androidx.compose.material.iconsExtended)
 

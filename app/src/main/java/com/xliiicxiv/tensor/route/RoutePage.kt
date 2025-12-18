@@ -15,6 +15,12 @@ sealed class RoutePage {
     data object PageSignUp: RoutePage()
 
     @Serializable
+    data object PageSetup: RoutePage()
+
+    @Serializable
+    data object PageProfile: RoutePage()
+
+    @Serializable
     data object PageTemplate: RoutePage()
 
 }

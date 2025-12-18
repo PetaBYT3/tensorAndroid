@@ -12,6 +12,8 @@ class RepositoryAuth {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
 
+    val currentUid: String? get() = firebaseAuth.uid
+
     fun getCurrentUser(): Flow<FirebaseUser?> {
         return callbackFlow {
             val authStateListener = FirebaseAuth.AuthStateListener {
