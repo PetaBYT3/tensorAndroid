@@ -28,6 +28,7 @@ class RepositoryUser {
                 .collection(userCollection)
                 .document(userUid!!)
                 .addSnapshotListener { snapshot, error ->
+
                 if (error != null) {
                     trySend(null)
                     return@addSnapshotListener
@@ -50,14 +51,12 @@ class RepositoryUser {
             val setProfilePicture = hashMapOf(
                 "userProfilePicture" to profilePicture
             )
-
             fireStore
                 .collection(userCollection)
                 .document(userUid!!)
                 .set(setProfilePicture, SetOptions.merge())
                 .await()
             FirebaseResponse.Success
-
         } catch (e: Exception) {
             FirebaseResponse.Failed(e.message.toString().capitalizeEachWord())
         }
@@ -68,7 +67,11 @@ class RepositoryUser {
     ): FirebaseResponse {
         return try {
             if (userUid == null) {
-                FirebaseResponse.Failed("Session Not Found")
+                return FirebaseResponse.Failed("Session Not Found")
+            }
+
+            if (userName.isBlank()) {
+                return FirebaseResponse.Failed("User Name Cannot Be Empty")
             }
 
             val checkUserName = fireStore
@@ -79,17 +82,14 @@ class RepositoryUser {
                 .await()
 
             if (checkUserName.isEmpty) {
-
                 val setUserName = hashMapOf(
                     "userName" to userName
                 )
-
                 fireStore
                     .collection(userCollection)
-                    .document(userUid!!)
+                    .document(userUid)
                     .set(setUserName, SetOptions.merge())
                 FirebaseResponse.Success
-
             } else {
                 FirebaseResponse.Failed("User Name Already Exist")
             }
@@ -103,16 +103,19 @@ class RepositoryUser {
     ): FirebaseResponse {
         return try {
             if (userUid == null) {
-                FirebaseResponse.Failed("Session Not Found")
+                return FirebaseResponse.Failed("Session Not Found")
+            }
+
+            if (displayName.isBlank()) {
+                return FirebaseResponse.Failed("Display Name Cannot Be Empty")
             }
 
             val setDisplayName = hashMapOf(
                 "displayName" to displayName
             )
-
             fireStore
                 .collection(userCollection)
-                .document(userUid!!)
+                .document(userUid)
                 .set(setDisplayName, SetOptions.merge())
                 .await()
             FirebaseResponse.Success

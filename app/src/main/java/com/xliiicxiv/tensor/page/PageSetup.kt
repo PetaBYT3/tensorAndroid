@@ -2,6 +2,7 @@
 
 package com.xliiicxiv.tensor.page
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AlternateEmail
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -39,6 +42,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceAtLeast
@@ -50,6 +56,7 @@ import com.xliiicxiv.tensor.action.ActionProfile
 import com.xliiicxiv.tensor.action.ActionSetup
 import com.xliiicxiv.tensor.action.ActionSignIn
 import com.xliiicxiv.tensor.extension.toImageBitmap
+import com.xliiicxiv.tensor.route.RoutePage
 import com.xliiicxiv.tensor.state.StateSetup
 import com.xliiicxiv.tensor.state.StateSignIn
 import com.xliiicxiv.tensor.template.CustomBasicButton
@@ -138,6 +145,7 @@ private fun Scaffold(
         topBar = {
             TopBar(
                 scrollBehavior = scrollBehaviour,
+                pagerState = pagerState,
                 navController = navController,
                 state = state,
                 onAction = onAction
@@ -164,16 +172,25 @@ private fun Scaffold(
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
+    pagerState: PagerState,
     navController: NavController,
     state: StateSetup,
     onAction: (ActionSetup) -> Unit
 ) {
+    val title = when (pagerState.currentPage) {
+        0 -> "User Name"
+        1 -> "Display Name"
+        2 -> "Profile Picture"
+        3 -> "Finish"
+        else -> "Setup"
+    }
     LargeTopAppBar(
-        title = { Text(text = "Setup") },
+        title = { Text(text = title) },
         scrollBehavior = scrollBehavior
     )
 }
 
+@SuppressLint("FrequentlyChangingValue")
 @Composable
 private fun Content(
     navController: NavController,
@@ -207,6 +224,7 @@ private fun Content(
             modifier = Modifier
                 .weight(1f),
             state = pagerState,
+            userScrollEnabled = false
         ) { index ->
             when (index) {
                 0 -> {
@@ -230,8 +248,7 @@ private fun Content(
                 }
                 3 -> {
                     PagerFinish(
-                        state = state,
-                        onAction = onAction
+                        navController = navController
                     )
                 }
             }
@@ -250,8 +267,8 @@ private fun PagerUserName(
             .padding(horizontal = generalPadding)
     ) {
         CustomTextField(
-            label = "Unique User Name",
-            leadingIcon = Icons.Rounded.Person,
+            label = "User Name",
+            leadingIcon = Icons.Rounded.AlternateEmail,
             value = state.textFieldUserName,
             onValueChange = { onAction(ActionSetup.TextFieldUserName(it)) }
         )
@@ -365,15 +382,26 @@ private fun PagerProfilePicture(
 
 @Composable
 private fun PagerFinish(
-    state: StateSetup,
-    onAction: (ActionSetup) -> Unit
+    navController: NavController
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = generalPadding)
     ) {
-
+        Text(
+            modifier = Modifier
+                .fillMaxWidth(),
+            text = "You're All Setup",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleLargeEmphasized
+        )
+        VerticalSpacer()
+        CustomButton(
+            text = "Finish",
+            isLoading = false,
+            onClick = { navController.navigate(RoutePage.PageHome) }
+        )
     }
 }
 
@@ -394,14 +422,18 @@ private fun Preview() {
 //        onAction = {}
 //    )
 
-    PagerDisplayName(
-        state = StateSetup(),
-        onAction = {}
-    )
+//    PagerDisplayName(
+//        state = StateSetup(),
+//        onAction = {}
+//    )
 
 //    PagerProfilePicture(
 //        state = StateSetup(),
 //        onAction = {}
 //    )
+
+    PagerFinish(
+        navController = navController
+    )
 
 }

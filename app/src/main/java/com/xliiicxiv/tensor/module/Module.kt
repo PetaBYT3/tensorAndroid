@@ -2,6 +2,7 @@ package com.xliiicxiv.tensor.module
 
 import com.xliiicxiv.tensor.repository.RepositoryAuth
 import com.xliiicxiv.tensor.repository.RepositoryUser
+import com.xliiicxiv.tensor.viewmodel.ViewModelHome
 import com.xliiicxiv.tensor.viewmodel.ViewModelMain
 import com.xliiicxiv.tensor.viewmodel.ViewModelProfile
 import com.xliiicxiv.tensor.viewmodel.ViewModelSetup
@@ -19,6 +20,7 @@ object Module {
         viewModelOf(::ViewModelSignIn)
         viewModelOf(::ViewModelSignUp)
         viewModelOf(::ViewModelSetup)
+        viewModelOf(::ViewModelHome)
         viewModelOf(::ViewModelProfile)
     }
 
