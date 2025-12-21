@@ -10,12 +10,10 @@ import kotlinx.coroutines.tasks.await
 
 class RepositoryAuth {
 
-    private val firebaseAuth = FirebaseAuth.getInstance()
-
-    val currentUid: String? get() = firebaseAuth.uid
-
-    fun getCurrentUser(): Flow<FirebaseUser?> {
+    fun getUserAuth(): Flow<FirebaseUser?> {
         return callbackFlow {
+            val firebaseAuth = FirebaseAuth.getInstance()
+
             val authStateListener = FirebaseAuth.AuthStateListener {
                 trySend(firebaseAuth.currentUser)
             }
@@ -33,6 +31,8 @@ class RepositoryAuth {
         password: String
     ): FirebaseResponse {
         return try {
+            val firebaseAuth = FirebaseAuth.getInstance()
+
             if (email.isBlank() || password.isBlank()) {
                 return FirebaseResponse.Failed("Please Fill All Text Field")
             }
@@ -56,6 +56,8 @@ class RepositoryAuth {
         retypePassword: String
     ): FirebaseResponse {
         return try {
+            val firebaseAuth = FirebaseAuth.getInstance()
+
             if (email.isBlank() || password.isBlank() || retypePassword.isBlank()) {
                 return FirebaseResponse.Failed("Please Fill All Text Field")
             }
@@ -78,6 +80,7 @@ class RepositoryAuth {
     }
 
     fun signOut() {
+        val firebaseAuth = FirebaseAuth.getInstance()
         firebaseAuth.signOut()
     }
 

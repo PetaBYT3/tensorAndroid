@@ -31,8 +31,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -40,7 +41,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.xliiicxiv.tensor.R
 import com.xliiicxiv.tensor.action.ActionSignIn
-import com.xliiicxiv.tensor.route.RoutePage
+import com.xliiicxiv.tensor.navigation.RoutePage
 import com.xliiicxiv.tensor.state.StateSignIn
 import com.xliiicxiv.tensor.template.CustomButton
 import com.xliiicxiv.tensor.template.CustomOutlinedButton
@@ -53,7 +54,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PageSignInCore(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     viewModel: ViewModelSignIn = koinViewModel()
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
@@ -62,7 +63,7 @@ fun PageSignInCore(
     val onAction = viewModel::onAction
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         state = state,
         onAction = onAction,
         snackBarHostState = snackBarHostState
@@ -80,7 +81,7 @@ fun PageSignInCore(
 
 @Composable
 private fun Scaffold(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateSignIn,
     onAction: (ActionSignIn) -> Unit,
     snackBarHostState: SnackbarHostState
@@ -96,7 +97,7 @@ private fun Scaffold(
         topBar = {
             TopBar(
                 scrollBehavior = scrollBehaviour,
-                navController = navController,
+                backStack = backStack,
                 state = state,
                 onAction = onAction
             )
@@ -108,7 +109,7 @@ private fun Scaffold(
                     .padding(innerPadding)
             ) {
                 Content(
-                    navController = navController,
+                    backStack = backStack,
                     state = state,
                     onAction = onAction
                 )
@@ -121,7 +122,7 @@ private fun Scaffold(
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateSignIn,
     onAction: (ActionSignIn) -> Unit
 ) {
@@ -133,7 +134,7 @@ private fun TopBar(
 
 @Composable
 private fun Content(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateSignIn,
     onAction: (ActionSignIn) -> Unit
 ) {
@@ -173,7 +174,7 @@ private fun Content(
         CustomOutlinedButton(
             text = "Sign Up",
             isLoading = false,
-            onClick = { navController.navigate(RoutePage.PageSignUp) },
+            onClick = { backStack.add(RoutePage.PageSignUp) },
         )
         VerticalSpacer()
         CustomOutlinedButton(
@@ -201,11 +202,11 @@ private fun Content(
 @Preview(showBackground = true)
 private fun Preview() {
 
-    val navController = rememberNavController()
+    val backStack = rememberNavBackStack()
     val snackBarHostState = remember { SnackbarHostState() }
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         state = StateSignIn(),
         onAction = {},
         snackBarHostState = snackBarHostState

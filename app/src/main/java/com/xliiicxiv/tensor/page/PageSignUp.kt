@@ -31,6 +31,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import com.xliiicxiv.tensor.action.ActionSignUp
 import com.xliiicxiv.tensor.state.StateSignUp
 import com.xliiicxiv.tensor.template.CustomButton
@@ -44,7 +47,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PageSignUpCore(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     viewModel: ViewModelSignUp = koinViewModel()
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
@@ -53,7 +56,7 @@ fun PageSignUpCore(
     val onAction = viewModel::onAction
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         state = state,
         onAction = onAction,
         snackBarHostState = snackBarHostState
@@ -71,7 +74,7 @@ fun PageSignUpCore(
 
 @Composable
 private fun Scaffold(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateSignUp,
     onAction: (ActionSignUp) -> Unit,
     snackBarHostState: SnackbarHostState
@@ -87,7 +90,7 @@ private fun Scaffold(
         topBar = {
             TopBar(
                 scrollBehavior = scrollBehaviour,
-                navController = navController,
+                backStack = backStack,
                 state = state,
                 onAction = onAction
             )
@@ -99,7 +102,7 @@ private fun Scaffold(
                     .padding(innerPadding)
             ) {
                 Content(
-                    navController = navController,
+                    backStack = backStack,
                     state = state,
                     onAction = onAction
                 )
@@ -112,7 +115,7 @@ private fun Scaffold(
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateSignUp,
     onAction: (ActionSignUp) -> Unit
 ) {
@@ -120,7 +123,7 @@ private fun TopBar(
         navigationIcon = {
             CustomIconButton(
                 icon = Icons.Rounded.ArrowBackIosNew,
-                onClick = { navController.popBackStack() }
+                onClick = { backStack.removeLast() }
             )
         },
         title = { Text(text = "Sign Up") },
@@ -130,7 +133,7 @@ private fun TopBar(
 
 @Composable
 private fun Content(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateSignUp,
     onAction: (ActionSignUp) -> Unit
 ) {
@@ -173,11 +176,11 @@ private fun Content(
 @Preview(showBackground = true)
 private fun Preview() {
 
-    val navController = rememberNavController()
+    val backStack = rememberNavBackStack()
     val snackBarHostState = remember { SnackbarHostState() }
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         state = StateSignUp(),
         onAction = {},
         snackBarHostState = snackBarHostState

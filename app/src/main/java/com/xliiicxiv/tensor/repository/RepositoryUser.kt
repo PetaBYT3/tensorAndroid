@@ -1,6 +1,5 @@
 package com.xliiicxiv.tensor.repository
 
-import android.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -14,33 +13,37 @@ import kotlinx.coroutines.tasks.await
 
 class RepositoryUser {
 
-    private val fireStore = FirebaseFirestore.getInstance()
-    private val userUid = FirebaseAuth.getInstance().currentUser?.uid
     private val userCollection = "usersData"
 
     fun getUserData(): Flow<DataClassUser?> {
         return callbackFlow {
-            if (userUid == null) {
+            val fireStore = FirebaseFirestore.getInstance()
+            val userUid = FirebaseAuth.getInstance().currentUser?.uid
+
+            if (userUid != null) {
+                val firestoreListener = fireStore
+                    .collection(userCollection)
+                    .document(userUid)
+                    .addSnapshotListener { snapshot, error ->
+
+                        if (error != null) {
+                            trySend(null)
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null && snapshot.exists()) {
+                            val userData = snapshot.toObject<DataClassUser>()
+                            trySend(userData)
+                        } else {
+                            trySend(null)
+                        }
+                    }
+
+                awaitClose { firestoreListener.remove() }
+            } else {
                 trySend(null)
+                close()
             }
-
-            val firestoreListener = fireStore
-                .collection(userCollection)
-                .document(userUid!!)
-                .addSnapshotListener { snapshot, error ->
-
-                if (error != null) {
-                    trySend(null)
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    val userData = snapshot.toObject<DataClassUser>()
-                    trySend(userData)
-                }
-            }
-
-            awaitClose { firestoreListener.remove() }
         }
     }
 
@@ -48,15 +51,22 @@ class RepositoryUser {
         profilePicture: String?
     ): FirebaseResponse {
         return try {
-            val setProfilePicture = hashMapOf(
-                "userProfilePicture" to profilePicture
-            )
-            fireStore
-                .collection(userCollection)
-                .document(userUid!!)
-                .set(setProfilePicture, SetOptions.merge())
-                .await()
-            FirebaseResponse.Success
+            val fireStore = FirebaseFirestore.getInstance()
+            val userUid = FirebaseAuth.getInstance().currentUser?.uid
+
+            if (userUid != null) {
+                val setProfilePicture = hashMapOf(
+                    "userProfilePicture" to profilePicture
+                )
+                fireStore
+                    .collection(userCollection)
+                    .document(userUid)
+                    .set(setProfilePicture, SetOptions.merge())
+                    .await()
+                FirebaseResponse.Success
+            } else {
+                return FirebaseResponse.Failed("No Session Detected")
+            }
         } catch (e: Exception) {
             FirebaseResponse.Failed(e.message.toString().capitalizeEachWord())
         }
@@ -66,32 +76,35 @@ class RepositoryUser {
         userName: String
     ): FirebaseResponse {
         return try {
-            if (userUid == null) {
-                return FirebaseResponse.Failed("Session Not Found")
-            }
+            val fireStore = FirebaseFirestore.getInstance()
+            val userUid = FirebaseAuth.getInstance().currentUser?.uid
 
-            if (userName.isBlank()) {
-                return FirebaseResponse.Failed("User Name Cannot Be Empty")
-            }
+            if (userUid != null) {
+                if (userName.isBlank()) {
+                    return FirebaseResponse.Failed("User Name Cannot Be Empty")
+                }
 
-            val checkUserName = fireStore
-                .collection(userCollection)
-                .whereEqualTo("userName", userName.trim().lowercase())
-                .limit(1)
-                .get()
-                .await()
-
-            if (checkUserName.isEmpty) {
-                val setUserName = hashMapOf(
-                    "userName" to userName
-                )
-                fireStore
+                val checkUserName = fireStore
                     .collection(userCollection)
-                    .document(userUid)
-                    .set(setUserName, SetOptions.merge())
-                FirebaseResponse.Success
+                    .whereEqualTo("userName", userName.trim().lowercase())
+                    .limit(1)
+                    .get()
+                    .await()
+
+                if (checkUserName.isEmpty) {
+                    val setUserName = hashMapOf(
+                        "userName" to userName
+                    )
+                    fireStore
+                        .collection(userCollection)
+                        .document(userUid)
+                        .set(setUserName, SetOptions.merge())
+                    FirebaseResponse.Success
+                } else {
+                    FirebaseResponse.Failed("User Name Already Exist")
+                }
             } else {
-                FirebaseResponse.Failed("User Name Already Exist")
+                return FirebaseResponse.Failed("Session Not Found")
             }
         } catch (e: Exception) {
             FirebaseResponse.Failed(e.message.toString().capitalizeEachWord())
@@ -102,23 +115,26 @@ class RepositoryUser {
         displayName: String
     ): FirebaseResponse {
         return try {
-            if (userUid == null) {
+            val fireStore = FirebaseFirestore.getInstance()
+            val userUid = FirebaseAuth.getInstance().currentUser?.uid
+
+            if (userUid != null) {
+                if (displayName.isBlank()) {
+                    return FirebaseResponse.Failed("Display Name Cannot Be Empty")
+                }
+
+                val setDisplayName = hashMapOf(
+                    "displayName" to displayName
+                )
+                fireStore
+                    .collection(userCollection)
+                    .document(userUid)
+                    .set(setDisplayName, SetOptions.merge())
+                    .await()
+                FirebaseResponse.Success
+            } else {
                 return FirebaseResponse.Failed("Session Not Found")
             }
-
-            if (displayName.isBlank()) {
-                return FirebaseResponse.Failed("Display Name Cannot Be Empty")
-            }
-
-            val setDisplayName = hashMapOf(
-                "displayName" to displayName
-            )
-            fireStore
-                .collection(userCollection)
-                .document(userUid)
-                .set(setDisplayName, SetOptions.merge())
-                .await()
-            FirebaseResponse.Success
         } catch (e: Exception) {
             FirebaseResponse.Failed(e.message.toString().capitalizeEachWord())
         }

@@ -23,6 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import com.google.firebase.auth.FirebaseAuth
 import com.xliiicxiv.tensor.action.ActionHome
 import com.xliiicxiv.tensor.action.ActionSignIn
@@ -36,14 +39,14 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PageHomeCore(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     viewModel: ViewModelHome = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         state = state,
         onAction = onAction
     )
@@ -51,7 +54,7 @@ fun PageHomeCore(
 
 @Composable
 private fun Scaffold(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateHome,
     onAction: (ActionHome) -> Unit
 ) {
@@ -66,7 +69,7 @@ private fun Scaffold(
         topBar = {
             TopBar(
                 scrollBehavior = scrollBehaviour,
-                navController = navController,
+                backStack = backStack,
                 state = state,
                 onAction = onAction
             )
@@ -78,7 +81,7 @@ private fun Scaffold(
                     .padding(innerPadding)
             ) {
                 Content(
-                    navController = navController,
+                    backStack = backStack,
                     state = state,
                     onAction = onAction
                 )
@@ -90,7 +93,7 @@ private fun Scaffold(
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateHome,
     onAction: (ActionHome) -> Unit
 ) {
@@ -102,7 +105,7 @@ private fun TopBar(
 
 @Composable
 private fun Content(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateHome,
     onAction: (ActionHome) -> Unit
 ) {
@@ -114,6 +117,7 @@ private fun Content(
             .verticalScroll(state = scrollState, enabled = true)
             .padding(horizontal = generalPadding)
     ) {
+        Text(text = state.firebaseAuth?.uid ?: "No User ID")
         CustomButton(
             text = "Sign Out",
             isLoading = false,
@@ -126,10 +130,10 @@ private fun Content(
 @Preview(showBackground = true)
 private fun Preview() {
 
-    val navController = rememberNavController()
+    val backStack = rememberNavBackStack()
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         state = StateHome(),
         onAction = {}
     )

@@ -35,11 +35,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     buildFeatures {
         compose = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 }
 
@@ -76,8 +79,14 @@ dependencies {
     implementation(libs.data.store.preferences)
     implementation(libs.androidx.datastore.core)
 
-    //Navigation
+    //Navigation 2
     implementation(libs.androidx.navigation.compose)
+
+    //Navigation 3
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.material3.adaptive.navigation3)
 
     //File Kit
     implementation(libs.filekit.dialog)
@@ -90,5 +99,5 @@ dependencies {
     implementation(libs.androidx.compose.material.iconsExtended)
 
     //Lottie Animation
-    implementation("com.airbnb.android:lottie-compose:6.4.0")
+    implementation(libs.lottie.compose)
 }

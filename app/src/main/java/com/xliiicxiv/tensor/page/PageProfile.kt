@@ -42,6 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import com.xliiicxiv.tensor.action.ActionProfile
 import com.xliiicxiv.tensor.extension.capitalizeEachWord
 import com.xliiicxiv.tensor.extension.toImageBitmap
@@ -63,14 +66,14 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PageProfileCore(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     viewModel: ViewModelProfile = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         state = state,
         onAction = onAction
     )
@@ -86,7 +89,7 @@ fun PageProfileCore(
 
 @Composable
 private fun Scaffold(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateProfile,
     onAction: (ActionProfile) -> Unit
 ) {
@@ -101,7 +104,7 @@ private fun Scaffold(
         topBar = {
             TopBar(
                 scrollBehavior = scrollBehaviour,
-                navController = navController,
+                backStack = backStack,
                 state = state,
                 onAction = onAction
             )
@@ -113,7 +116,7 @@ private fun Scaffold(
                     .padding(innerPadding)
             ) {
                 Content(
-                    navController = navController,
+                    backStack = backStack,
                     state = state,
                     onAction = onAction
                 )
@@ -125,7 +128,7 @@ private fun Scaffold(
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateProfile,
     onAction: (ActionProfile) -> Unit
 ) {
@@ -137,7 +140,7 @@ private fun TopBar(
 
 @Composable
 private fun Content(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateProfile,
     onAction: (ActionProfile) -> Unit
 ) {
@@ -268,10 +271,10 @@ private fun Content(
 @Preview(showBackground = true)
 private fun Preview() {
 
-    val navController = rememberNavController()
+    val backStack = rememberNavBackStack()
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         state = StateProfile(),
         onAction = {}
     )

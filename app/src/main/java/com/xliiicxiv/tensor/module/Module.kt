@@ -1,5 +1,6 @@
 package com.xliiicxiv.tensor.module
 
+import com.google.firebase.auth.FirebaseAuth
 import com.xliiicxiv.tensor.repository.RepositoryAuth
 import com.xliiicxiv.tensor.repository.RepositoryUser
 import com.xliiicxiv.tensor.viewmodel.ViewModelHome
@@ -31,7 +32,7 @@ object Module {
 
     fun getAllModule() = listOf(
         moduleViewModel,
-        moduleRepository
+        moduleRepository,
     )
 
 }

@@ -42,24 +42,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.google.firebase.auth.FirebaseAuth
-import com.xliiicxiv.tensor.action.ActionProfile
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import com.xliiicxiv.tensor.action.ActionSetup
-import com.xliiicxiv.tensor.action.ActionSignIn
 import com.xliiicxiv.tensor.extension.toImageBitmap
-import com.xliiicxiv.tensor.route.RoutePage
+import com.xliiicxiv.tensor.navigation.RoutePage
 import com.xliiicxiv.tensor.state.StateSetup
-import com.xliiicxiv.tensor.state.StateSignIn
-import com.xliiicxiv.tensor.template.CustomBasicButton
 import com.xliiicxiv.tensor.template.CustomButton
 import com.xliiicxiv.tensor.template.CustomOutlinedButton
 import com.xliiicxiv.tensor.template.CustomTextField
@@ -68,18 +61,16 @@ import com.xliiicxiv.tensor.template.PolygonShape
 import com.xliiicxiv.tensor.template.VerticalSpacer
 import com.xliiicxiv.tensor.template.generalPadding
 import com.xliiicxiv.tensor.viewmodel.ViewModelSetup
-import com.xliiicxiv.tensor.viewmodel.ViewModelSignIn
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
-import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun PageSetupCore(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     viewModel: ViewModelSetup = koinViewModel()
 ) {
     val pagerCount = 4
@@ -92,7 +83,7 @@ fun PageSetupCore(
     val onAction = viewModel::onAction
 
     Scaffold(
-        navController = navController,
+        backStack = backStack,
         pagerState = pagerState,
         state = state,
         onAction = onAction,
@@ -128,7 +119,7 @@ fun PageSetupCore(
 
 @Composable
 private fun Scaffold(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     pagerState: PagerState,
     state: StateSetup,
     onAction: (ActionSetup) -> Unit,
@@ -146,7 +137,7 @@ private fun Scaffold(
             TopBar(
                 scrollBehavior = scrollBehaviour,
                 pagerState = pagerState,
-                navController = navController,
+                backStack = backStack,
                 state = state,
                 onAction = onAction
             )
@@ -158,7 +149,7 @@ private fun Scaffold(
                     .padding(innerPadding)
             ) {
                 Content(
-                    navController = navController,
+                    backStack = backStack,
                     pagerState = pagerState,
                     state = state,
                     onAction = onAction
@@ -173,7 +164,7 @@ private fun Scaffold(
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     pagerState: PagerState,
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     state: StateSetup,
     onAction: (ActionSetup) -> Unit
 ) {
@@ -193,7 +184,7 @@ private fun TopBar(
 @SuppressLint("FrequentlyChangingValue")
 @Composable
 private fun Content(
-    navController: NavController,
+    backStack: NavBackStack<NavKey>,
     pagerState: PagerState,
     state: StateSetup,
     onAction: (ActionSetup) -> Unit
@@ -248,7 +239,7 @@ private fun Content(
                 }
                 3 -> {
                     PagerFinish(
-                        navController = navController
+                        backStack = backStack
                     )
                 }
             }
@@ -382,7 +373,7 @@ private fun PagerProfilePicture(
 
 @Composable
 private fun PagerFinish(
-    navController: NavController
+    backStack: NavBackStack<NavKey>
 ) {
     Column(
         modifier = Modifier
@@ -400,7 +391,10 @@ private fun PagerFinish(
         CustomButton(
             text = "Finish",
             isLoading = false,
-            onClick = { navController.navigate(RoutePage.PageHome) }
+            onClick = {
+                backStack.clear()
+                backStack.add(RoutePage.PageHome)
+            }
         )
     }
 }
@@ -409,10 +403,10 @@ private fun PagerFinish(
 @Preview(showBackground = true)
 private fun Preview() {
 
-    val navController = rememberNavController()
+    val backStack = rememberNavBackStack()
 
 //    Scaffold(
-//        navController = navController,
+//        backStack = backStack,
 //        state = StateSetup(),
 //        onAction = {}
 //    )
@@ -433,7 +427,7 @@ private fun Preview() {
 //    )
 
     PagerFinish(
-        navController = navController
+        backStack = backStack
     )
 
 }

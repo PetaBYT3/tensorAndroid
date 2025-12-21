@@ -1,18 +1,14 @@
 package com.xliiicxiv.tensor.viewmodel
 
-import android.graphics.BitmapFactory
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.xliiicxiv.tensor.action.ActionProfile
 import com.xliiicxiv.tensor.extension.toBase64
-import com.xliiicxiv.tensor.extension.toBitmap
 import com.xliiicxiv.tensor.repository.RepositoryAuth
 import com.xliiicxiv.tensor.repository.RepositoryUser
 import com.xliiicxiv.tensor.state.StateProfile
 import io.github.vinceglb.filekit.dialogs.compose.util.toImageBitmap
-import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ViewModelProfile(
+    private val firebaseAuth: FirebaseAuth,
     private val repositoryAuth: RepositoryAuth,
     private val repositoryUser: RepositoryUser
 ): ViewModel() {
@@ -30,7 +27,7 @@ class ViewModelProfile(
 
     init {
         viewModelScope.launch {
-            repositoryAuth.getCurrentUser().collect { firebaseUser ->
+            repositoryAuth.getUserAuth().collect { firebaseUser ->
                 _state.update { it.copy(firebaseUser = firebaseUser) }
             }
         }
