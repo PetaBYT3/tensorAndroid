@@ -3,6 +3,7 @@ package com.xliiicxiv.tensor.module
 import com.google.firebase.auth.FirebaseAuth
 import com.xliiicxiv.tensor.repository.RepositoryAuth
 import com.xliiicxiv.tensor.repository.RepositoryUser
+import com.xliiicxiv.tensor.viewmodel.ViewModelForgetPassword
 import com.xliiicxiv.tensor.viewmodel.ViewModelHome
 import com.xliiicxiv.tensor.viewmodel.ViewModelMain
 import com.xliiicxiv.tensor.viewmodel.ViewModelProfile
@@ -20,6 +21,7 @@ object Module {
         singleOf(::ViewModelMain)
         viewModelOf(::ViewModelSignIn)
         viewModelOf(::ViewModelSignUp)
+        viewModelOf(::ViewModelForgetPassword)
         viewModelOf(::ViewModelSetup)
         viewModelOf(::ViewModelHome)
         viewModelOf(::ViewModelProfile)

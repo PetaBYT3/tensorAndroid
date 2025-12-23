@@ -68,6 +68,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    //Credential Manager
+    implementation(libs.credential)
+    implementation(libs.credential.play.service.auth)
+    implementation(libs.googleid)
+
     //Serialization
     implementation(libs.kotlinx.serialization.json)
 

@@ -11,12 +11,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,6 +33,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import com.google.firebase.auth.FirebaseAuth
 import com.xliiicxiv.tensor.action.ActionHome
 import com.xliiicxiv.tensor.action.ActionSignIn
+import com.xliiicxiv.tensor.navigation.RoutePage
 import com.xliiicxiv.tensor.state.StateHome
 import com.xliiicxiv.tensor.state.StateSignIn
 import com.xliiicxiv.tensor.template.CustomButton
@@ -42,21 +47,34 @@ fun PageHomeCore(
     backStack: NavBackStack<NavKey>,
     viewModel: ViewModelHome = koinViewModel()
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
 
     Scaffold(
         backStack = backStack,
         state = state,
-        onAction = onAction
+        onAction = onAction,
+        snackBarHostState = snackBarHostState
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { snackBarMessage ->
+            snackBarHostState.showSnackbar(
+                message = snackBarMessage,
+                withDismissAction = true
+            )
+        }
+    }
 }
 
 @Composable
 private fun Scaffold(
     backStack: NavBackStack<NavKey>,
     state: StateHome,
-    onAction: (ActionHome) -> Unit
+    onAction: (ActionHome) -> Unit,
+    snackBarHostState: SnackbarHostState
 ) {
     val scrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         state = rememberTopAppBarState()
@@ -86,7 +104,8 @@ private fun Scaffold(
                     onAction = onAction
                 )
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackBarHostState) }
     )
 }
 
@@ -121,7 +140,7 @@ private fun Content(
         CustomButton(
             text = "Sign Out",
             isLoading = false,
-            onClick = { FirebaseAuth.getInstance().signOut() }
+            onClick = { backStack.add(RoutePage.PageProfile) }
         )
     }
 }
@@ -130,11 +149,13 @@ private fun Content(
 @Preview(showBackground = true)
 private fun Preview() {
 
+    val snackBarHostState = remember { SnackbarHostState() }
     val backStack = rememberNavBackStack()
 
     Scaffold(
         backStack = backStack,
         state = StateHome(),
-        onAction = {}
+        onAction = {},
+        snackBarHostState = snackBarHostState
     )
 }

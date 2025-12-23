@@ -13,6 +13,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.xliiicxiv.tensor.page.PageForgetPasswordCore
 import com.xliiicxiv.tensor.page.PageHomeCore
 import com.xliiicxiv.tensor.page.PageProfileCore
 import com.xliiicxiv.tensor.page.PageSetupCore
@@ -20,6 +21,7 @@ import com.xliiicxiv.tensor.page.PageSignInCore
 import com.xliiicxiv.tensor.page.PageSignUpCore
 import com.xliiicxiv.tensor.page.PageSplashCore
 import com.xliiicxiv.tensor.viewmodel.ViewModelMain
+import kotlinx.coroutines.delay
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.viewmodel.koinViewModel
@@ -38,6 +40,7 @@ fun NavigationCore(
                     subclass(RoutePage.PageSplash::class, RoutePage.PageSplash.serializer())
                     subclass(RoutePage.PageSignIn::class, RoutePage.PageSignIn.serializer())
                     subclass(RoutePage.PageSignUp::class, RoutePage.PageSignUp.serializer())
+                    subclass(RoutePage.PageForgetPassword::class, RoutePage.PageForgetPassword.serializer())
                     subclass(RoutePage.PageSetup::class, RoutePage.PageSetup.serializer())
                     subclass(RoutePage.PageHome::class, RoutePage.PageHome.serializer())
                     subclass(RoutePage.PageProfile::class, RoutePage.PageProfile.serializer())
@@ -48,17 +51,24 @@ fun NavigationCore(
     )
 
     LaunchedEffect(state.isLoggedIn, state.isSetupDone) {
-        if (state.isLoggedIn == true) {
-            if (state.isSetupDone == true) {
+        delay(2_500)
+        when {
+            state.isLoggedIn == false && state.isSetupDone == false -> {
                 backStack.clear()
-                backStack.add(RoutePage.PageHome)
-            } else {
+                backStack.add(RoutePage.PageSignIn)
+            }
+            state.isLoggedIn == false && state.isSetupDone == true -> {
+                backStack.clear()
+                backStack.add(RoutePage.PageSignIn)
+            }
+            state.isLoggedIn == true && state.isSetupDone == false -> {
                 backStack.clear()
                 backStack.add(RoutePage.PageSetup)
             }
-        } else {
-            backStack.clear()
-            backStack.add(RoutePage.PageSignIn)
+            state.isLoggedIn == true && state.isSetupDone == true -> {
+                backStack.clear()
+                backStack.add(RoutePage.PageHome)
+            }
         }
     }
 
@@ -83,6 +93,13 @@ fun NavigationCore(
                 is RoutePage.PageSignUp -> {
                     NavEntry(navKey) {
                         PageSignUpCore(
+                            backStack = backStack
+                        )
+                    }
+                }
+                is RoutePage.PageForgetPassword -> {
+                    NavEntry(navKey) {
+                        PageForgetPasswordCore(
                             backStack = backStack
                         )
                     }

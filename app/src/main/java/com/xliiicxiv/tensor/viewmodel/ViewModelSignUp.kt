@@ -7,12 +7,14 @@ import com.xliiicxiv.tensor.action.ActionSignUp
 import com.xliiicxiv.tensor.repository.FirebaseResponse
 import com.xliiicxiv.tensor.repository.RepositoryAuth
 import com.xliiicxiv.tensor.state.StateSignUp
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ViewModelSignUp(
     private val repositoryAuth: RepositoryAuth
@@ -45,15 +47,17 @@ class ViewModelSignUp(
         viewModelScope.launch {
             _state.update { it.copy(isSignUpButtonLoading = true) }
 
-            val signInResult = repositoryAuth.signUp(
-                _state.value.textFieldEmail,
-                _state.value.textFieldPassword,
-                _state.value.textFieldRetypePassword
-            )
+            val signInResult = withContext(Dispatchers.IO) {
+                repositoryAuth.signUp(
+                    _state.value.textFieldEmail,
+                    _state.value.textFieldPassword,
+                    _state.value.textFieldRetypePassword
+                )
+            }
 
             when (signInResult) {
                 FirebaseResponse.Success -> {
-                    _effect.emit("Sign In Successful")
+                    _effect.emit("Sign Up Successful")
                 }
                 is FirebaseResponse.Failed -> {
                     _effect.emit(signInResult.message)

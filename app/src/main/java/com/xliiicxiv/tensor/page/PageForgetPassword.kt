@@ -4,14 +4,13 @@ package com.xliiicxiv.tensor.page
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AlternateEmail
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
+import androidx.compose.material.icons.rounded.Mail
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LargeTopAppBar
@@ -26,43 +25,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
-import com.xliiicxiv.tensor.R
+import com.google.firebase.auth.FirebaseAuth
+import com.xliiicxiv.tensor.action.ActionForgetPassword
 import com.xliiicxiv.tensor.action.ActionSignIn
-import com.xliiicxiv.tensor.navigation.RoutePage
-import com.xliiicxiv.tensor.repository.RepositoryAuth
+import com.xliiicxiv.tensor.state.StateForgetPassword
 import com.xliiicxiv.tensor.state.StateSignIn
 import com.xliiicxiv.tensor.template.CustomButton
-import com.xliiicxiv.tensor.template.CustomOutlinedButton
+import com.xliiicxiv.tensor.template.CustomIconButton
 import com.xliiicxiv.tensor.template.CustomTextField
-import com.xliiicxiv.tensor.template.CustomTextFieldPassword
 import com.xliiicxiv.tensor.template.VerticalSpacer
 import com.xliiicxiv.tensor.template.generalPadding
+import com.xliiicxiv.tensor.viewmodel.ViewModelForgetPassword
 import com.xliiicxiv.tensor.viewmodel.ViewModelSignIn
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun PageSignInCore(
+fun PageForgetPasswordCore(
     backStack: NavBackStack<NavKey>,
-    viewModel: ViewModelSignIn = koinViewModel()
+    viewModel: ViewModelForgetPassword = koinViewModel()
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -89,8 +78,8 @@ fun PageSignInCore(
 @Composable
 private fun Scaffold(
     backStack: NavBackStack<NavKey>,
-    state: StateSignIn,
-    onAction: (ActionSignIn) -> Unit,
+    state: StateForgetPassword,
+    onAction: (ActionForgetPassword) -> Unit,
     snackBarHostState: SnackbarHostState
 ) {
     val scrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -122,7 +111,7 @@ private fun Scaffold(
                 )
             }
         },
-        snackbarHost = { SnackbarHost( snackBarHostState ) }
+        snackbarHost = { SnackbarHost(snackBarHostState) }
     )
 }
 
@@ -130,11 +119,17 @@ private fun Scaffold(
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     backStack: NavBackStack<NavKey>,
-    state: StateSignIn,
-    onAction: (ActionSignIn) -> Unit
+    state: StateForgetPassword,
+    onAction: (ActionForgetPassword) -> Unit,
 ) {
     LargeTopAppBar(
-        title = { Text(text = "Sign In") },
+        navigationIcon = {
+            CustomIconButton(
+                icon = Icons.Rounded.ArrowBackIosNew,
+                onClick = { backStack.removeLast() }
+            )
+        },
+        title = { Text(text = "Forget Password") },
         scrollBehavior = scrollBehavior
     )
 }
@@ -142,10 +137,9 @@ private fun TopBar(
 @Composable
 private fun Content(
     backStack: NavBackStack<NavKey>,
-    state: StateSignIn,
-    onAction: (ActionSignIn) -> Unit
+    state: StateForgetPassword,
+    onAction: (ActionForgetPassword) -> Unit,
 ) {
-    val context = LocalContext.current
     val scrollState = rememberScrollState()
 
     Column(
@@ -156,52 +150,15 @@ private fun Content(
     ) {
         CustomTextField(
             label = "E-Mail",
-            leadingIcon = Icons.Rounded.AlternateEmail,
+            leadingIcon = Icons.Rounded.Mail,
             value = state.textFieldEmail,
-            onValueChange = { onAction(ActionSignIn.TextFieldEmail(it)) }
-        )
-        VerticalSpacer()
-        CustomTextFieldPassword(
-            label = "Password",
-            value = state.textFieldPassword,
-            onValueChange = { onAction(ActionSignIn.TextFieldPassword(it)) }
+            onValueChange = { onAction(ActionForgetPassword.TextFieldEmail(it)) }
         )
         VerticalSpacer()
         CustomButton(
-            text = "Sign In",
-            isLoading = state.isSignInButtonLoading,
-            onClick = { onAction(ActionSignIn.SignIn) }
-        )
-        VerticalSpacer()
-        CustomOutlinedButton(
-            text = "Forget Password",
-            isLoading = false,
-            onClick = { backStack.add(RoutePage.PageForgetPassword) },
-        )
-        VerticalSpacer()
-        CustomOutlinedButton(
-            text = "Sign Up",
-            isLoading = false,
-            onClick = { backStack.add(RoutePage.PageSignUp) },
-        )
-        VerticalSpacer()
-        CustomOutlinedButton(
-            text = "Continue With Google",
-            isLoading = false,
-            onClick = { onAction(ActionSignIn.SignInWithGoogle(context)) }
-        )
-
-        val geminiComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.gemini_ai))
-        val geminiProgress by animateLottieCompositionAsState(
-            composition = geminiComposition,
-            iterations = LottieConstants.IterateForever
-        )
-        LottieAnimation(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp),
-            composition = geminiComposition,
-            progress = { geminiProgress }
+            text = "Send Password Request",
+            isLoading = state.isLoading,
+            onClick = { onAction(ActionForgetPassword.SendPasswordResetEmail) }
         )
     }
 }
@@ -210,12 +167,12 @@ private fun Content(
 @Preview(showBackground = true)
 private fun Preview() {
 
-    val backStack = rememberNavBackStack()
     val snackBarHostState = remember { SnackbarHostState() }
+    val backStack = rememberNavBackStack()
 
     Scaffold(
         backStack = backStack,
-        state = StateSignIn(),
+        state = StateForgetPassword(),
         onAction = {},
         snackBarHostState = snackBarHostState
     )

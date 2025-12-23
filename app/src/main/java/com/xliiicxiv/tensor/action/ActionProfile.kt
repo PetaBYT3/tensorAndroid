@@ -8,6 +8,7 @@ sealed interface ActionProfile {
     data class PickedImage(val pickedImage: PlatformFile?): ActionProfile
     data class CroppedImage(val croppedImage: ImageBitmap?): ActionProfile
     data object DeleteProfilePicture: ActionProfile
+    data object ChangePassword: ActionProfile
     data object SignOut: ActionProfile
 
 }

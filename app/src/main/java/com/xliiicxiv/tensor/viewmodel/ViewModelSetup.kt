@@ -29,6 +29,7 @@ class ViewModelSetup(
             val getUserData = withContext(Dispatchers.IO) {
                 repositoryUser.getUserData()
             }
+
             getUserData.collect { userData ->
                 _state.update { it.copy(userData = userData) }
             }

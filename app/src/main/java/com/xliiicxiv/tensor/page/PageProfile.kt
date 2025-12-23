@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AlternateEmail
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material.icons.rounded.Dataset
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
@@ -28,12 +29,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -48,8 +53,10 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import com.xliiicxiv.tensor.action.ActionProfile
 import com.xliiicxiv.tensor.extension.capitalizeEachWord
 import com.xliiicxiv.tensor.extension.toImageBitmap
+import com.xliiicxiv.tensor.navigation.RoutePage
 import com.xliiicxiv.tensor.state.StateProfile
 import com.xliiicxiv.tensor.template.CustomDangerButton
+import com.xliiicxiv.tensor.template.CustomIconButton
 import com.xliiicxiv.tensor.template.CustomItemList
 import com.xliiicxiv.tensor.template.CustomOutlinedButton
 import com.xliiicxiv.tensor.template.ImageCropDialog
@@ -69,14 +76,26 @@ fun PageProfileCore(
     backStack: NavBackStack<NavKey>,
     viewModel: ViewModelProfile = koinViewModel()
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
 
     Scaffold(
         backStack = backStack,
         state = state,
-        onAction = onAction
+        onAction = onAction,
+        snackBarHostState = snackBarHostState
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { snackBarMessage ->
+            snackBarHostState.showSnackbar(
+                message = snackBarMessage,
+                withDismissAction = true
+            )
+        }
+    }
 
     if (state.imageBitmap != null) {
         ImageCropDialog(
@@ -91,7 +110,8 @@ fun PageProfileCore(
 private fun Scaffold(
     backStack: NavBackStack<NavKey>,
     state: StateProfile,
-    onAction: (ActionProfile) -> Unit
+    onAction: (ActionProfile) -> Unit,
+    snackBarHostState: SnackbarHostState
 ) {
     val scrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         state = rememberTopAppBarState()
@@ -121,7 +141,8 @@ private fun Scaffold(
                     onAction = onAction
                 )
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackBarHostState) }
     )
 }
 
@@ -133,6 +154,12 @@ private fun TopBar(
     onAction: (ActionProfile) -> Unit
 ) {
     LargeTopAppBar(
+        navigationIcon = {
+            CustomIconButton(
+                icon = Icons.Rounded.ArrowBackIosNew,
+                onClick = { backStack.removeLast() }
+            )
+        },
         title = { Text(text = "Profile") },
         scrollBehavior = scrollBehavior
     )
@@ -214,7 +241,7 @@ private fun Content(
                     }
                     VerticalSpacer()
                     Card(
-                        onClick = {  }
+                        onClick = { onAction(ActionProfile.DeleteProfilePicture) }
                     ) {
                         Icon(
                             modifier = Modifier
@@ -256,7 +283,7 @@ private fun Content(
         CustomOutlinedButton(
             text = "Change Password",
             isLoading = false,
-            onClick = {}
+            onClick = { onAction(ActionProfile.ChangePassword) }
         )
         VerticalSpacer()
         CustomDangerButton(
@@ -271,11 +298,13 @@ private fun Content(
 @Preview(showBackground = true)
 private fun Preview() {
 
+    val snackBarHostState = remember { SnackbarHostState() }
     val backStack = rememberNavBackStack()
 
     Scaffold(
         backStack = backStack,
         state = StateProfile(),
-        onAction = {}
+        onAction = {},
+        snackBarHostState = snackBarHostState
     )
 }

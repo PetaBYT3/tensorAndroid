@@ -35,10 +35,7 @@ class ViewModelMain(
                     if (userAuth != null) {
                         it.copy(isLoggedIn = true)
                     } else {
-                        it.copy(
-                            isLoggedIn = false,
-                            isSetupDone = null
-                        )
+                        it.copy(isLoggedIn = false)
                     }
                 }
             }
@@ -51,7 +48,7 @@ class ViewModelMain(
 
             getUserData.collect { userData ->
                 _state.update {
-                    if (userData != null) {
+                    if (userData?.userName != null && userData.displayName != null) {
                         it.copy(isSetupDone = true)
                     } else {
                         it.copy(isSetupDone = false)
