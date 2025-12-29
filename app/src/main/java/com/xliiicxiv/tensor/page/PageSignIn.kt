@@ -190,7 +190,11 @@ private fun Content(
             isLoading = false,
             onClick = { onAction(ActionSignIn.SignInWithGoogle(context)) }
         )
-
+        CustomOutlinedButton(
+            text = "Continue With Facebook",
+            isLoading = false,
+            onClick = {  }
+        )
         val geminiComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.gemini_ai))
         val geminiProgress by animateLottieCompositionAsState(
             composition = geminiComposition,

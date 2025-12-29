@@ -2,6 +2,9 @@
 
 package com.xliiicxiv.tensor.page
 
+import android.graphics.Bitmap
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,17 +20,22 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AlternateEmail
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
+import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Dataset
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Mail
+import androidx.compose.material.icons.rounded.PermIdentity
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Phone
+import androidx.compose.material.icons.rounded.Photo
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -38,9 +46,13 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,6 +93,23 @@ fun PageProfileCore(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
 
+    val imagePicker = rememberFilePickerLauncher(
+        title = "Pick Image For Profile Picture",
+        type = FileKitType.Image,
+        mode = FileKitMode.Single,
+        onResult = { file: PlatformFile? ->
+            onAction(ActionProfile.PickedImage(file))
+            onAction(ActionProfile.BottomSheetChangeProfilePicture)
+        }
+    )
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview(),
+    ) { bitMap: Bitmap? ->
+        onAction(ActionProfile.CapturedImage(bitMap))
+        onAction(ActionProfile.BottomSheetChangeProfilePicture)
+    }
+
     Scaffold(
         backStack = backStack,
         state = state,
@@ -95,6 +124,36 @@ fun PageProfileCore(
                 withDismissAction = true
             )
         }
+    }
+
+    if (state.bottomSheetChangeProfilePicture) {
+        ModalBottomSheet(
+            onDismissRequest = { onAction(ActionProfile.BottomSheetChangeProfilePicture) },
+            content = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(generalPadding)
+                ) {
+                    Card(
+                        onClick = { cameraLauncher.launch(null) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CameraAlt,
+                            contentDescription = null
+                        )
+                    }
+                    Card(
+                        onClick = { imagePicker.launch() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Photo,
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
+        )
     }
 
     if (state.imageBitmap != null) {
@@ -157,7 +216,7 @@ private fun TopBar(
         navigationIcon = {
             CustomIconButton(
                 icon = Icons.Rounded.ArrowBackIosNew,
-                onClick = { backStack.removeLast() }
+                onClick = { backStack.removeAt(backStack.lastIndex) }
             )
         },
         title = { Text(text = "Profile") },
@@ -172,15 +231,6 @@ private fun Content(
     onAction: (ActionProfile) -> Unit
 ) {
     val scrollState = rememberScrollState()
-
-    val imagePicker = rememberFilePickerLauncher(
-        title = "Pick Image For Profile Picture",
-        type = FileKitType.Image,
-        mode = FileKitMode.Single,
-        onResult = { file: PlatformFile? ->
-            onAction(ActionProfile.PickedImage(file))
-        }
-    )
 
     Column(
         modifier = Modifier
@@ -230,7 +280,7 @@ private fun Content(
                         .align(Alignment.TopEnd)
                 ) {
                     Card(
-                        onClick = { imagePicker.launch() }
+                        onClick = { onAction(ActionProfile.BottomSheetChangeProfilePicture) }
                     ) {
                         Icon(
                             modifier = Modifier
@@ -256,12 +306,17 @@ private fun Content(
         VerticalSpacer()
         val itemList = listOf(
             SimpleItemList(
-                icon = Icons.Rounded.Person,
+                icon = Icons.Rounded.AlternateEmail,
                 title = state.userData?.userName ?: "User Name Not Set Yet",
                 onClick = {}
             ),
             SimpleItemList(
-                icon = Icons.Rounded.AlternateEmail,
+                icon = Icons.Rounded.Person,
+                title = state.userData?.displayName ?: "Display Name Not Set Yet",
+                onClick = {}
+            ),
+            SimpleItemList(
+                icon = Icons.Rounded.Mail,
                 title = state.firebaseUser?.email ?: "?",
                 onClick = {}
             ),
@@ -274,7 +329,7 @@ private fun Content(
                 icon = Icons.Rounded.Dataset,
                 title = state.firebaseUser?.providerId?.capitalizeEachWord() ?: "?",
                 onClick = {}
-            )
+            ),
         )
         CustomItemList(
             itemList = itemList

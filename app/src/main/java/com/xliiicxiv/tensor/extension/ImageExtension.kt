@@ -15,7 +15,7 @@ fun ImageBitmap.toBase64(): String {
 
 private fun Bitmap.toBase64(
     format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG,
-    quality: Int = 50
+    quality: Int = 75
 ): String {
     val outputStream = ByteArrayOutputStream()
     this.compress(format, quality, outputStream)

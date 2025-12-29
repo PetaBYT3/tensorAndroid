@@ -1,6 +1,8 @@
 package com.xliiicxiv.tensor.viewmodel
 
+import android.graphics.Bitmap
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -54,6 +56,12 @@ class ViewModelProfile(
 
     fun onAction(action: ActionProfile) {
         when (action) {
+            ActionProfile.BottomSheetChangeProfilePicture -> {
+                _state.update { it.copy(bottomSheetChangeProfilePicture = !it.bottomSheetChangeProfilePicture) }
+            }
+            is ActionProfile.CapturedImage -> {
+                capturedImage(action.capturedImage)
+            }
             is ActionProfile.PickedImage -> {
                 pickedImage(action.pickedImage)
             }
@@ -72,12 +80,28 @@ class ViewModelProfile(
         }
     }
 
+    private fun capturedImage(capturedImage: Bitmap?) {
+        viewModelScope.launch {
+            _state.update { currentState ->
+                if (capturedImage != null) {
+                    val imageBitmap = withContext(Dispatchers.Default) {
+                        capturedImage.asImageBitmap()
+                    }
+                    currentState.copy(imageBitmap = imageBitmap)
+                } else {
+                    currentState.copy(imageBitmap = null)
+                }
+            }
+        }
+    }
+
     private fun pickedImage(pickedImage: PlatformFile?) {
         viewModelScope.launch {
             if (pickedImage != null) {
                 val imageBitmap = withContext(Dispatchers.IO) {
                     pickedImage.toImageBitmap()
                 }
+
                 _state.update { it.copy(imageBitmap = imageBitmap) }
             } else {
                 _state.update { it.copy(imageBitmap = null) }

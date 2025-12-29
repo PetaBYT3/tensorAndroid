@@ -10,6 +10,8 @@ data class StateProfile(
     val firebaseUser: FirebaseUser? = null,
     val userData: DataClassUser? = null,
 
+    val bottomSheetChangeProfilePicture: Boolean = false,
+
     val dialogCropImage: Boolean = false,
     val imageBitmap: ImageBitmap? = null,
     val croppedImageBitmap: ImageBitmap? = null,
