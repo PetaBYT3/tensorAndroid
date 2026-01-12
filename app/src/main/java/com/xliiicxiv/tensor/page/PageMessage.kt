@@ -16,7 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LargeTopAppBar
@@ -37,24 +41,25 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import com.xliiicxiv.tensor.action.ActionHome
 import com.xliiicxiv.tensor.action.ActionMessage
 import com.xliiicxiv.tensor.navigation.RoutePage
-import com.xliiicxiv.tensor.state.StateHome
 import com.xliiicxiv.tensor.state.StateMessage
+import com.xliiicxiv.tensor.template.CustomIconButton
+import com.xliiicxiv.tensor.template.CustomMessageList
 import com.xliiicxiv.tensor.template.CustomTextContent
 import com.xliiicxiv.tensor.template.CustomTextTitle
 import com.xliiicxiv.tensor.template.HorizontalSpacer
+import com.xliiicxiv.tensor.template.MessageItemList
 import com.xliiicxiv.tensor.template.VerticalSpacer
 import com.xliiicxiv.tensor.template.generalPadding
-import com.xliiicxiv.tensor.viewmodel.ViewModelHome
+import com.xliiicxiv.tensor.viewmodel.ViewModelMessage
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun PageHomeCore(
+fun PageMessageCore(
     backStack: NavBackStack<NavKey>,
-    viewModel: ViewModelHome = koinViewModel(),
-    snackBarHostState: SnackbarHostState
+    snackBarHostState: SnackbarHostState,
+    viewModel: ViewModelMessage = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
@@ -64,13 +69,14 @@ fun PageHomeCore(
         state = state,
         onAction = onAction
     )
+
 }
 
 @Composable
 private fun Scaffold(
     backStack: NavBackStack<NavKey>,
-    state: StateHome,
-    onAction: (ActionHome) -> Unit
+    state: StateMessage,
+    onAction: (ActionMessage) -> Unit
 ) {
     val scrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         state = rememberTopAppBarState()
@@ -84,6 +90,7 @@ private fun Scaffold(
         topBar = {
             TopBar(
                 scrollBehavior = scrollBehaviour,
+                backStack = backStack,
                 state = state,
                 onAction = onAction
             )
@@ -107,11 +114,18 @@ private fun Scaffold(
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    state: StateHome,
-    onAction: (ActionHome) -> Unit
+    backStack: NavBackStack<NavKey>,
+    state: StateMessage,
+    onAction: (ActionMessage) -> Unit
 ) {
     LargeTopAppBar(
-        title = { Text(text = "Home") },
+        title = { Text(text = "Message") },
+        actions = {
+            CustomIconButton(
+                icon = Icons.Rounded.Add,
+                onClick = { backStack.add(RoutePage.PageAddMessage) }
+            )
+        },
         scrollBehavior = scrollBehavior
     )
 }
@@ -119,14 +133,52 @@ private fun TopBar(
 @Composable
 private fun Content(
     backStack: NavBackStack<NavKey>,
-    state: StateHome,
-    onAction: (ActionHome) -> Unit
+    state: StateMessage,
+    onAction: (ActionMessage) -> Unit
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(generalPadding)
     ) {
-
+        if (state.messagePerson.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.extraLarge)
+            ) {
+                items(
+                    items = state.messagePerson,
+                ) { messageList ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        shape = MaterialTheme.shapes.small,
+                        onClick = { backStack.add(RoutePage.PagePrivateMessage("")) }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(20.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(RoundedCornerShape(50))
+                                    .background(Color.Black)
+                            ) {}
+                            HorizontalSpacer()
+                            Column() {
+                                CustomTextTitle(text = "User")
+                                VerticalSpacer()
+                                CustomTextContent(text = messageList.lastMessage ?: "")
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(2.5.dp))
+                }
+            }
+        } else {
+            Text(text = "No Message Available")
+        }
     }
 }

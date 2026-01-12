@@ -9,26 +9,29 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AlternateEmail
-import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Dataset
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Mail
-import androidx.compose.material.icons.rounded.PermIdentity
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Phone
-import androidx.compose.material.icons.rounded.Photo
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -37,7 +40,6 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,31 +48,28 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
+import com.xliiicxiv.tensor.action.ActionHome
 import com.xliiicxiv.tensor.action.ActionProfile
 import com.xliiicxiv.tensor.extension.capitalizeEachWord
 import com.xliiicxiv.tensor.extension.toImageBitmap
-import com.xliiicxiv.tensor.navigation.RoutePage
+import com.xliiicxiv.tensor.state.StateHome
 import com.xliiicxiv.tensor.state.StateProfile
+import com.xliiicxiv.tensor.template.CustomConfirmationBottomSheet
 import com.xliiicxiv.tensor.template.CustomDangerButton
-import com.xliiicxiv.tensor.template.CustomIconButton
 import com.xliiicxiv.tensor.template.CustomItemList
 import com.xliiicxiv.tensor.template.CustomOutlinedButton
+import com.xliiicxiv.tensor.template.HorizontalSpacer
 import com.xliiicxiv.tensor.template.ImageCropDialog
 import com.xliiicxiv.tensor.template.PolygonShape
 import com.xliiicxiv.tensor.template.SimpleItemList
@@ -86,10 +85,9 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun PageProfileCore(
     backStack: NavBackStack<NavKey>,
+    snackBarHostState: SnackbarHostState,
     viewModel: ViewModelProfile = koinViewModel()
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
 
@@ -113,8 +111,7 @@ fun PageProfileCore(
     Scaffold(
         backStack = backStack,
         state = state,
-        onAction = onAction,
-        snackBarHostState = snackBarHostState
+        onAction = onAction
     )
 
     LaunchedEffect(Unit) {
@@ -135,7 +132,10 @@ fun PageProfileCore(
                         .fillMaxWidth()
                         .padding(generalPadding)
                 ) {
-                    Card(
+                    Button(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
                         onClick = { cameraLauncher.launch(null) }
                     ) {
                         Icon(
@@ -143,16 +143,29 @@ fun PageProfileCore(
                             contentDescription = null
                         )
                     }
-                    Card(
+                    HorizontalSpacer()
+                    Button(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
                         onClick = { imagePicker.launch() }
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Photo,
+                            imageVector = Icons.Rounded.Image,
                             contentDescription = null
                         )
                     }
                 }
             }
+        )
+    }
+
+    if (state.bottomSheetDeleteProfilePicture) {
+        CustomConfirmationBottomSheet(
+            icon = Icons.Rounded.Delete,
+            message = "Are you sure you want to delete this profile picture ?",
+            onConfirm = { onAction(ActionProfile.DeleteProfilePicture) },
+            onCancel = { onAction(ActionProfile.BottomSheetDeleteProfilePicture) }
         )
     }
 
@@ -169,8 +182,7 @@ fun PageProfileCore(
 private fun Scaffold(
     backStack: NavBackStack<NavKey>,
     state: StateProfile,
-    onAction: (ActionProfile) -> Unit,
-    snackBarHostState: SnackbarHostState
+    onAction: (ActionProfile) -> Unit
 ) {
     val scrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         state = rememberTopAppBarState()
@@ -180,10 +192,10 @@ private fun Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehaviour.nestedScrollConnection)
             .imePadding(),
+        contentWindowInsets = WindowInsets(bottom = 0.dp),
         topBar = {
             TopBar(
                 scrollBehavior = scrollBehaviour,
-                backStack = backStack,
                 state = state,
                 onAction = onAction
             )
@@ -200,25 +212,17 @@ private fun Scaffold(
                     onAction = onAction
                 )
             }
-        },
-        snackbarHost = { SnackbarHost(snackBarHostState) }
+        }
     )
 }
 
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
-    backStack: NavBackStack<NavKey>,
     state: StateProfile,
     onAction: (ActionProfile) -> Unit
 ) {
     LargeTopAppBar(
-        navigationIcon = {
-            CustomIconButton(
-                icon = Icons.Rounded.ArrowBackIosNew,
-                onClick = { backStack.removeAt(backStack.lastIndex) }
-            )
-        },
         title = { Text(text = "Profile") },
         scrollBehavior = scrollBehavior
     )
@@ -228,7 +232,7 @@ private fun TopBar(
 private fun Content(
     backStack: NavBackStack<NavKey>,
     state: StateProfile,
-    onAction: (ActionProfile) -> Unit
+    onAction: (ActionProfile) -> Unit,
 ) {
     val scrollState = rememberScrollState()
 
@@ -236,7 +240,7 @@ private fun Content(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(state = scrollState, enabled = true)
-            .padding(horizontal = generalPadding)
+            .padding(generalPadding)
     ) {
         Row(
             modifier = Modifier
@@ -250,8 +254,8 @@ private fun Content(
                 Card(
                     modifier = Modifier
                         .size(250.dp)
-                        .align(Alignment.Center),
-                    shape = PolygonShape(MaterialShapes.Cookie12Sided)
+                        .align(Alignment.Center)
+                        .clip(RoundedCornerShape(50)),
                 ) {
                     Box(
                         modifier = Modifier
@@ -291,7 +295,7 @@ private fun Content(
                     }
                     VerticalSpacer()
                     Card(
-                        onClick = { onAction(ActionProfile.DeleteProfilePicture) }
+                        onClick = { onAction(ActionProfile.BottomSheetDeleteProfilePicture) }
                     ) {
                         Icon(
                             modifier = Modifier
@@ -356,10 +360,9 @@ private fun Preview() {
     val snackBarHostState = remember { SnackbarHostState() }
     val backStack = rememberNavBackStack()
 
-    Scaffold(
+    Content(
         backStack = backStack,
         state = StateProfile(),
-        onAction = {},
-        snackBarHostState = snackBarHostState
+        onAction = {}
     )
 }

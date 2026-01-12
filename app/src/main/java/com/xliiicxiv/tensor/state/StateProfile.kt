@@ -11,6 +11,7 @@ data class StateProfile(
     val userData: DataClassUser? = null,
 
     val bottomSheetChangeProfilePicture: Boolean = false,
+    val bottomSheetDeleteProfilePicture: Boolean = false,
 
     val dialogCropImage: Boolean = false,
     val imageBitmap: ImageBitmap? = null,

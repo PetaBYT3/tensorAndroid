@@ -22,10 +22,15 @@ sealed interface RoutePage: NavKey {
     data object PageSetup: RoutePage, NavKey
 
     @Serializable
-    data object PageHome: RoutePage, NavKey
+    data object PageMainPager: RoutePage, NavKey
 
     @Serializable
-    data object PageProfile: RoutePage, NavKey
+    data object PageAddMessage: RoutePage, NavKey
+
+    @Serializable
+    data class PagePrivateMessage(
+        val messageId: String
+    ): RoutePage, NavKey
 
     @Serializable
     data object PageTemplate: RoutePage, NavKey

@@ -1,84 +1,83 @@
-@file:OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.xliiicxiv.tensor.page
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AlternateEmail
-import androidx.compose.material.icons.rounded.ArrowBackIosNew
-import androidx.compose.material.icons.rounded.Mail
+import androidx.compose.material.icons.rounded.ArrowBackIos
+import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.Message
+import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
-import com.xliiicxiv.tensor.action.ActionSignUp
-import com.xliiicxiv.tensor.state.StateSignUp
+import com.google.firebase.auth.FirebaseAuth
+import com.xliiicxiv.tensor.action.ActionPrivateMessage
+import com.xliiicxiv.tensor.action.ActionSignIn
+import com.xliiicxiv.tensor.state.StatePrivateMessage
+import com.xliiicxiv.tensor.state.StateSignIn
 import com.xliiicxiv.tensor.template.CustomButton
 import com.xliiicxiv.tensor.template.CustomIconButton
 import com.xliiicxiv.tensor.template.CustomTextField
-import com.xliiicxiv.tensor.template.CustomTextFieldPassword
+import com.xliiicxiv.tensor.template.HorizontalSpacer
 import com.xliiicxiv.tensor.template.VerticalSpacer
 import com.xliiicxiv.tensor.template.generalPadding
-import com.xliiicxiv.tensor.viewmodel.ViewModelSignUp
+import com.xliiicxiv.tensor.viewmodel.ViewModelPrivateMessage
+import com.xliiicxiv.tensor.viewmodel.ViewModelSignIn
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun PageSignUpCore(
+fun PagePrivateMessageCore(
+    messageId: String,
     backStack: NavBackStack<NavKey>,
-    viewModel: ViewModelSignUp = koinViewModel()
+    viewModel: ViewModelPrivateMessage = koinViewModel()
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
+
+    LaunchedEffect(messageId) {
+        onAction(ActionPrivateMessage.GetMessageId(messageId))
+    }
 
     Scaffold(
         backStack = backStack,
         state = state,
-        onAction = onAction,
-        snackBarHostState = snackBarHostState
+        onAction = onAction
     )
-
-    LaunchedEffect(Unit) {
-        viewModel.effect.collect { snackBarMessage ->
-            snackBarHostState.showSnackbar(
-                message = snackBarMessage,
-                withDismissAction = true
-            )
-        }
-    }
 }
 
 @Composable
 private fun Scaffold(
     backStack: NavBackStack<NavKey>,
-    state: StateSignUp,
-    onAction: (ActionSignUp) -> Unit,
-    snackBarHostState: SnackbarHostState
+    state: StatePrivateMessage,
+    onAction: (ActionPrivateMessage) -> Unit
 ) {
     val scrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
         state = rememberTopAppBarState()
@@ -109,7 +108,12 @@ private fun Scaffold(
                 )
             }
         },
-        snackbarHost = { SnackbarHost(snackBarHostState) }
+        bottomBar = {
+            BottomBar(
+                state = state,
+                onAction = onAction
+            )
+        }
     )
 }
 
@@ -117,17 +121,17 @@ private fun Scaffold(
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     backStack: NavBackStack<NavKey>,
-    state: StateSignUp,
-    onAction: (ActionSignUp) -> Unit
+    state: StatePrivateMessage,
+    onAction: (ActionPrivateMessage) -> Unit
 ) {
     LargeTopAppBar(
         navigationIcon = {
             CustomIconButton(
-                icon = Icons.Rounded.ArrowBackIosNew,
+                icon = Icons.Rounded.ArrowBackIos,
                 onClick = { backStack.removeAt(backStack.lastIndex) }
             )
         },
-        title = { Text(text = "Sign Up") },
+        title = { Text(text = state.messageId) },
         scrollBehavior = scrollBehavior
     )
 }
@@ -135,8 +139,8 @@ private fun TopBar(
 @Composable
 private fun Content(
     backStack: NavBackStack<NavKey>,
-    state: StateSignUp,
-    onAction: (ActionSignUp) -> Unit
+    state: StatePrivateMessage,
+    onAction: (ActionPrivateMessage) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -146,30 +150,46 @@ private fun Content(
             .verticalScroll(state = scrollState, enabled = true)
             .padding(horizontal = generalPadding)
     ) {
-        CustomTextField(
-            label = "E-Mail",
-            leadingIcon = Icons.Rounded.Mail,
-            value = state.textFieldEmail,
-            onValueChange = { onAction(ActionSignUp.TextFieldEmail(it)) }
-        )
-        VerticalSpacer()
-        CustomTextFieldPassword(
-            label = "Password",
-            value = state.textFieldPassword,
-            onValueChange = { onAction(ActionSignUp.TextFieldPassword(it)) }
-        )
-        VerticalSpacer()
-        CustomTextFieldPassword(
-            label = "Retype Password",
-            value = state.textFieldRetypePassword,
-            onValueChange = { onAction(ActionSignUp.TextFieldRetypePassword(it)) }
-        )
-        VerticalSpacer()
-        CustomButton(
-            text = "Sign Up",
-            isLoading = state.isSignUpButtonLoading,
-            onClick = { onAction(ActionSignUp.SignUp) }
-        )
+    }
+}
+
+@Composable
+private fun BottomBar(
+    state: StatePrivateMessage,
+    onAction: (ActionPrivateMessage) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RectangleShape
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(generalPadding)
+        ) {
+            CustomTextField(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                label = "Message",
+                leadingIcon = Icons.Rounded.Message,
+                value = "",
+                onValueChange = {}
+            )
+            VerticalSpacer()
+            Row() {
+                Spacer(modifier = Modifier.weight(1f))
+                CustomIconButton(
+                    icon = Icons.Rounded.Image,
+                    onClick = {}
+                )
+                HorizontalSpacer()
+                CustomIconButton(
+                    icon = Icons.Rounded.Send,
+                    onClick = {}
+                )
+            }
+        }
     }
 }
 
@@ -178,12 +198,10 @@ private fun Content(
 private fun Preview() {
 
     val backStack = rememberNavBackStack()
-    val snackBarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         backStack = backStack,
-        state = StateSignUp(),
-        onAction = {},
-        snackBarHostState = snackBarHostState
+        state = StatePrivateMessage(),
+        onAction = {}
     )
 }

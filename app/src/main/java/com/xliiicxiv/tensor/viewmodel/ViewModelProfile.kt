@@ -59,6 +59,9 @@ class ViewModelProfile(
             ActionProfile.BottomSheetChangeProfilePicture -> {
                 _state.update { it.copy(bottomSheetChangeProfilePicture = !it.bottomSheetChangeProfilePicture) }
             }
+            ActionProfile.BottomSheetDeleteProfilePicture -> {
+                _state.update { it.copy(bottomSheetDeleteProfilePicture = !it.bottomSheetDeleteProfilePicture) }
+            }
             is ActionProfile.CapturedImage -> {
                 capturedImage(action.capturedImage)
             }

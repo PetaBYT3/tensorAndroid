@@ -255,7 +255,7 @@ private fun PagerUserName(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = generalPadding)
+            .padding(generalPadding)
     ) {
         CustomTextField(
             label = "User Name",
@@ -280,7 +280,7 @@ private fun PagerDisplayName(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = generalPadding)
+            .padding(generalPadding)
     ) {
         CustomTextField(
             label = "Display Name",
@@ -316,7 +316,7 @@ private fun PagerProfilePicture(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = generalPadding)
+            .padding(generalPadding)
     ) {
         Box(
             modifier = Modifier
@@ -378,7 +378,7 @@ private fun PagerFinish(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = generalPadding)
+            .padding(generalPadding)
     ) {
         Text(
             modifier = Modifier
@@ -393,7 +393,7 @@ private fun PagerFinish(
             isLoading = false,
             onClick = {
                 backStack.clear()
-                backStack.add(RoutePage.PageHome)
+                backStack.add(RoutePage.PageMainPager)
             }
         )
     }

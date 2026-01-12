@@ -1,4 +1,4 @@
 package com.xliiicxiv.tensor.action
 
-sealed interface ActionHome {
+sealed interface ActionMessage {
 }

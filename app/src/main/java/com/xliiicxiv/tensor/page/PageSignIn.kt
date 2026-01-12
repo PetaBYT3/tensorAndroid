@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AlternateEmail
+import androidx.compose.material.icons.rounded.Mail
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LargeTopAppBar
@@ -26,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -44,7 +44,6 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.xliiicxiv.tensor.R
 import com.xliiicxiv.tensor.action.ActionSignIn
 import com.xliiicxiv.tensor.navigation.RoutePage
-import com.xliiicxiv.tensor.repository.RepositoryAuth
 import com.xliiicxiv.tensor.state.StateSignIn
 import com.xliiicxiv.tensor.template.CustomButton
 import com.xliiicxiv.tensor.template.CustomOutlinedButton
@@ -53,10 +52,6 @@ import com.xliiicxiv.tensor.template.CustomTextFieldPassword
 import com.xliiicxiv.tensor.template.VerticalSpacer
 import com.xliiicxiv.tensor.template.generalPadding
 import com.xliiicxiv.tensor.viewmodel.ViewModelSignIn
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -152,11 +147,11 @@ private fun Content(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(state = scrollState, enabled = true)
-            .padding(horizontal = generalPadding)
+            .padding(generalPadding)
     ) {
         CustomTextField(
             label = "E-Mail",
-            leadingIcon = Icons.Rounded.AlternateEmail,
+            leadingIcon = Icons.Rounded.Mail,
             value = state.textFieldEmail,
             onValueChange = { onAction(ActionSignIn.TextFieldEmail(it)) }
         )
@@ -190,6 +185,7 @@ private fun Content(
             isLoading = false,
             onClick = { onAction(ActionSignIn.SignInWithGoogle(context)) }
         )
+        VerticalSpacer()
         CustomOutlinedButton(
             text = "Continue With Facebook",
             isLoading = false,

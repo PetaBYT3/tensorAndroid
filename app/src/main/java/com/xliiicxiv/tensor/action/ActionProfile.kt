@@ -7,6 +7,7 @@ import io.github.vinceglb.filekit.PlatformFile
 sealed interface ActionProfile {
 
     data object BottomSheetChangeProfilePicture: ActionProfile
+    data object BottomSheetDeleteProfilePicture: ActionProfile
     data class CapturedImage(val capturedImage: Bitmap?): ActionProfile
     data class PickedImage(val pickedImage: PlatformFile?): ActionProfile
     data class CroppedImage(val croppedImage: ImageBitmap?): ActionProfile

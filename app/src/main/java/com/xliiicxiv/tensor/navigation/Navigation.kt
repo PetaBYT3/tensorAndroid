@@ -13,9 +13,10 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.xliiicxiv.tensor.page.PageAddMessageCore
 import com.xliiicxiv.tensor.page.PageForgetPasswordCore
-import com.xliiicxiv.tensor.page.PageHomeCore
-import com.xliiicxiv.tensor.page.PageProfileCore
+import com.xliiicxiv.tensor.page.PageMainPagerCore
+import com.xliiicxiv.tensor.page.PagePrivateMessageCore
 import com.xliiicxiv.tensor.page.PageSetupCore
 import com.xliiicxiv.tensor.page.PageSignInCore
 import com.xliiicxiv.tensor.page.PageSignUpCore
@@ -42,8 +43,9 @@ fun NavigationCore(
                     subclass(RoutePage.PageSignUp::class, RoutePage.PageSignUp.serializer())
                     subclass(RoutePage.PageForgetPassword::class, RoutePage.PageForgetPassword.serializer())
                     subclass(RoutePage.PageSetup::class, RoutePage.PageSetup.serializer())
-                    subclass(RoutePage.PageHome::class, RoutePage.PageHome.serializer())
-                    subclass(RoutePage.PageProfile::class, RoutePage.PageProfile.serializer())
+                    subclass(RoutePage.PageMainPager::class, RoutePage.PageMainPager.serializer())
+                    subclass(RoutePage.PageAddMessage::class, RoutePage.PageAddMessage.serializer())
+                    subclass(RoutePage.PagePrivateMessage::class, RoutePage.PagePrivateMessage.serializer())
                 }
             }
         },
@@ -67,7 +69,7 @@ fun NavigationCore(
             }
             state.isLoggedIn == true && state.isSetupDone == true -> {
                 backStack.clear()
-                backStack.add(RoutePage.PageHome)
+                backStack.add(RoutePage.PageMainPager)
             }
         }
     }
@@ -111,16 +113,24 @@ fun NavigationCore(
                         )
                     }
                 }
-                is RoutePage.PageHome -> {
+                is RoutePage.PageMainPager -> {
                     NavEntry(navKey) {
-                        PageHomeCore(
+                        PageMainPagerCore(
                             backStack = backStack
                         )
                     }
                 }
-                is RoutePage.PageProfile -> {
+                is RoutePage.PageAddMessage -> {
                     NavEntry(navKey) {
-                        PageProfileCore(
+                        PageAddMessageCore(
+                            backStack = backStack
+                        )
+                    }
+                }
+                is RoutePage.PagePrivateMessage -> {
+                    NavEntry(navKey) {
+                        PagePrivateMessageCore(
+                            messageId = navKey.messageId,
                             backStack = backStack
                         )
                     }
