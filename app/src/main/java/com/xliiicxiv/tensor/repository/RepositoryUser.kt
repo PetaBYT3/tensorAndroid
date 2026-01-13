@@ -6,10 +6,13 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.toObject
 import com.xliiicxiv.tensor.dataclass.DataClassUser
 import com.xliiicxiv.tensor.extension.capitalizeEachWord
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class RepositoryUser {
 
@@ -43,6 +46,27 @@ class RepositoryUser {
             } else {
                 trySend(null)
                 close()
+            }
+        }
+    }
+
+    suspend fun getUserDataByUserName(keyWord: String): List<DataClassUser>? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val firestore = FirebaseFirestore.getInstance()
+
+                val userDataResult = firestore
+                    .collection(userCollection)
+                    .orderBy("userName")
+                    .startAt(keyWord.lowercase())
+                    .endAt(keyWord.lowercase() + "\uf8ff")
+                    .get()
+                    .await()
+
+                userDataResult.toObjects(DataClassUser::class.java)
+
+            } catch (e: Exception) {
+                null
             }
         }
     }

@@ -2,6 +2,7 @@
 
 package com.xliiicxiv.tensor.page
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -64,6 +67,10 @@ fun PagePrivateMessageCore(
 
     LaunchedEffect(messageId) {
         onAction(ActionPrivateMessage.GetMessageId(messageId))
+    }
+
+    LaunchedEffect(messageId) {
+        onAction(ActionPrivateMessage.LoadMessageBubble(messageId))
     }
 
     Scaffold(
@@ -142,14 +149,51 @@ private fun Content(
     state: StatePrivateMessage,
     onAction: (ActionPrivateMessage) -> Unit
 ) {
-    val scrollState = rememberScrollState()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(state = scrollState, enabled = true)
             .padding(horizontal = generalPadding)
     ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            items(
+                items = state.messageBubbleList
+            ) { messageBubble ->
+                if (messageBubble.messageOwner != state.currentUser) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Card() {
+                            Text(
+                                modifier = Modifier
+                                    .padding(generalPadding),
+                                text = messageBubble.message!!
+                            )
+                        }
+                    }
+                    HorizontalSpacer()
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Card() {
+                            Text(
+                                modifier = Modifier
+                                    .padding(generalPadding),
+                                text = messageBubble.message!!
+                            )
+                        }
+                    }
+                    HorizontalSpacer()
+                }
+            }
+        }
     }
 }
 
@@ -173,8 +217,8 @@ private fun BottomBar(
                     .fillMaxWidth(),
                 label = "Message",
                 leadingIcon = Icons.Rounded.Message,
-                value = "",
-                onValueChange = {}
+                value = state.textFieldMessageText,
+                onValueChange = { onAction(ActionPrivateMessage.TextFieldMessageText(it)) }
             )
             VerticalSpacer()
             Row() {
@@ -186,7 +230,7 @@ private fun BottomBar(
                 HorizontalSpacer()
                 CustomIconButton(
                     icon = Icons.Rounded.Send,
-                    onClick = {}
+                    onClick = { onAction(ActionPrivateMessage.SendMessage) }
                 )
             }
         }
